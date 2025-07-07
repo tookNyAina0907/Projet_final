@@ -35,7 +35,7 @@ ob_start();
 </section>
 
 <script>
-  const apiBase = "http://localhost/Projet_final/ws/";
+  const apiBase = "http://localhost/Projet_final/ws";
 
   function ajax(method, url, data, callback) {
     const xhr = new XMLHttpRequest();

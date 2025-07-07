@@ -5,7 +5,7 @@ ob_start();
 <section>
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
     <h2>Clients enregistrés</h2>
-    <a class="btn" href="ajouter-client.php">➕ Ajouter client</a>
+    <a class="btn" href="ajouter-client">➕ Ajouter client</a>
   </div>
   <table>
     <thead>
