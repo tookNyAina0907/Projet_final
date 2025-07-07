@@ -29,7 +29,24 @@ ob_start();
 
   <button type="submit" disabled id="validerBtn">Valider le prêt</button>
 </form>
+<script>
+  const apiBase = "http://localhost/Projet_final/ws"; // adapte à ton chemin
 
+  // Charger les types de prêt
+  fetch(`${apiBase}/types`)
+    .then(res => res.json())
+    .then(data => {
+      const select = document.getElementById('type_pret_id');
+      data.forEach(tp => {
+        const option = document.createElement('option');
+        option.value = tp.id;
+        option.textContent = `${tp.nom} (Taux ${tp.taux}%, Assurance ${tp.assurance}%)`;
+        option.dataset.taux = tp.taux;
+        option.dataset.assurance = tp.assurance;
+        select.appendChild(option);
+      });
+    });
+</script>
 <?php
 $content = ob_get_clean();
 include __DIR__ . '/../templates/layout.php';
