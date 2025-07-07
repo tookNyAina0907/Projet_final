@@ -17,15 +17,15 @@ class Type {
 
     public static function create($data) {
         $db = getDB();
-        $stmt = $db->prepare("INSERT INTO type_pret (nom, taux) VALUES (?, ?)");
-        $stmt->execute([$data->nom, $data->taux]);
+        $stmt = $db->prepare("INSERT INTO type_pret (nom, taux, assurance) VALUES (?, ?, ?)");
+        $stmt->execute([$data->nom, $data->taux, $data->assurance]);
         return $db->lastInsertId();
     }
 
     public static function update($id, $data) {
         $db = getDB();
-        $stmt = $db->prepare("UPDATE type_pret SET nom = ?, taux = ? WHERE id = ?");
-        $stmt->execute([$data->nom, $data->taux, $id]);
+        $stmt = $db->prepare("UPDATE type_pret SET nom = ?, taux = ?, assurance = ? WHERE id = ?");
+        $stmt->execute([$data->nom, $data->taux, $data->assurance, $id]);
     }
 
     public static function delete($id) {

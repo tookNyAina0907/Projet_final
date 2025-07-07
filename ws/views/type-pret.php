@@ -11,6 +11,7 @@ ob_start();
       <tr>
         <th>Nom</th>
         <th>Taux mensuel (%)</th>
+        <th>Assurance (%)</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -29,6 +30,10 @@ ob_start();
     <div>
       <label>Taux mensuel (%)</label>
       <input type="number" id="taux" step="0.01" min="0" required>
+    </div>
+    <div>
+      <label>Assurance (%)</label>
+      <input type="number" id="assurance" step="0.01" min="0">
     </div>
     <button class="btn" type="submit">Ajouter</button>
   </form>
@@ -58,6 +63,7 @@ ob_start();
         tr.innerHTML = `
           <td>${type.nom}</td>
           <td>${type.taux}</td>
+          <td>${type.assurance !== null ? type.assurance : ''}</td>
           <td class="table-actions">
             <a class="btn" href="#" style="background:var(--accent);" onclick='remplirFormulaire(${JSON.stringify(type)})'>Modifier</a>
             <a class="btn" href="#" style="background:var(--danger);" onclick='supprimerType(${type.id})'>Supprimer</a>
@@ -72,6 +78,8 @@ ob_start();
     document.getElementById("id").value = type.id;
     document.getElementById("nom").value = type.nom;
     document.getElementById("taux").value = type.taux;
+    document.getElementById("assurance").value = type.assurance ?? "";
+    document.querySelector("#type-form button").textContent = "Modifier";
   }
 
   function supprimerType(id) {
@@ -87,6 +95,7 @@ ob_start();
     document.getElementById("id").value = "";
     document.getElementById("nom").value = "";
     document.getElementById("taux").value = "";
+    document.getElementById("assurance").value = "";
     document.querySelector("#type-form button").textContent = "Ajouter";
   }
 
@@ -96,8 +105,10 @@ ob_start();
     const id = document.getElementById("id").value;
     const nom = document.getElementById("nom").value;
     const taux = parseFloat(document.getElementById("taux").value);
+    const assuranceInput = document.getElementById("assurance").value;
+    const assurance = assuranceInput === "" ? null : parseFloat(assuranceInput);
 
-    const data = JSON.stringify({ nom, taux });
+    const data = JSON.stringify({ nom, taux, assurance });
 
     if (id) {
       ajax("PUT", `/types/${id}`, data, () => {
