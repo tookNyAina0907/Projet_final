@@ -3,7 +3,7 @@ $title = 'Simulation de prêt';
 ob_start();
 ?>
 
-<h2>Simulation de prêt pour un client</h2>
+<h2>gestion de client</h2>
 
 <form id="pretForm">
   <h3>Informations Client</h3>
