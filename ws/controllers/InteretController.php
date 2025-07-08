@@ -21,4 +21,16 @@ class InteretController {
         Interet::deleteByClientId($client_id);
         Flight::json(['message' => 'Intérêts supprimés avec succès']);
     }
+    public static function getByDate() {
+    $debut = Flight::request()->query['debut'];
+    $fin = Flight::request()->query['fin'];
+
+    if (!$debut || !$fin) {
+        Flight::halt(400, 'Dates manquantes');
+    }
+
+    $resultats = Interet::getByDate($debut, $fin);
+    Flight::json($resultats);
+}
+
 }
