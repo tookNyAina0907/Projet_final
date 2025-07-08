@@ -138,17 +138,17 @@ ob_start();
     }
 
     fetch(apiBase + '/simulate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          capital: capital,
-          taux: taux,
-          duree: duree,
-          assurance: assurance
-        })
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        capital: capital,
+        taux: taux,
+        duree: duree,
+        assurance: assurance
       })
+    })
       .then(res => res.json())
       .then(data => {
         const container = document.getElementById('simulation-container');
@@ -185,7 +185,8 @@ ob_start();
         alert('Erreur lors de la simulation');
         console.error(err);
       });
-  });
+});
+
 
   document.addEventListener('DOMContentLoaded', () => {
     afficherDateDuJour();
