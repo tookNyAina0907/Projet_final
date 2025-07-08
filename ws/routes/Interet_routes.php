@@ -9,3 +9,4 @@ Flight::route('POST /interets', ['InteretController', 'create']);
 
 // Supprimer tous les intérêts d'un client
 Flight::route('DELETE /interets/client/@client_id', ['InteretController', 'deleteByClient']);
+Flight::route('GET /interets/filtre', ['InteretController', 'getByDate']);
