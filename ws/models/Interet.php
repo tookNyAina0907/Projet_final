@@ -24,4 +24,18 @@ class Interet {
         $stmt = $db->prepare("DELETE FROM interet WHERE client_id = ?");
         $stmt->execute([$client_id]);
     }
+ public static function getByDate($datedebut, $datefin) {
+    $db = getDB();
+    $stmt = $db->prepare("
+        SELECT DATE_FORMAT(mois, '%m/%Y') AS mois, SUM(montant) AS total
+        FROM interet
+        WHERE mois BETWEEN ? AND LAST_DAY(?)
+        GROUP BY mois
+        ORDER BY mois
+    ");
+    $stmt->execute([$datedebut . '-01', $datefin . '-01']);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+        
 }
