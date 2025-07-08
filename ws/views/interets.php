@@ -1,45 +1,24 @@
 <?php
-require_once __DIR__ . '/../db.php';
 $title = 'Intérêts gagnés';
-
-$db = getDB();
-
-// Récupération des dates depuis le formulaire (inputs type="month" donnent format YYYY-MM)
-$debut = isset($_GET['debut']) ? $_GET['debut'] : null;
-$fin = isset($_GET['fin']) ? $_GET['fin'] : null;
-
-$interetsParMois = [];
-
-if ($debut && $fin) {
-    $stmt = $db->prepare("
-        SELECT DATE_FORMAT(mois, '%m/%Y') AS mois, SUM(montant) AS total
-        FROM interet
-        WHERE mois BETWEEN ? AND LAST_DAY(?)
-        GROUP BY mois
-        ORDER BY mois
-    ");
-    $stmt->execute([$debut . '-01', $fin . '-01']);
-    $interetsParMois = $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
 ob_start();
 ?>
 
 <section>
   <h2>Visualisation des intérêts gagnés</h2>
-  <form method="get" style="display:flex; gap:1rem; align-items:end; margin-bottom:2rem; flex-wrap:wrap;">
+
+  <form id="filtre-form" style="display:flex; gap:1rem; align-items:end; margin-bottom:2rem; flex-wrap:wrap;">
     <div>
       <label for="debut">Mois/année début</label>
-      <input type="month" id="debut" name="debut" value="<?= htmlspecialchars($debut ?? '') ?>">
+      <input type="month" id="debut" name="debut" required>
     </div>
     <div>
       <label for="fin">Mois/année fin</label>
-      <input type="month" id="fin" name="fin" value="<?= htmlspecialchars($fin ?? '') ?>">
+      <input type="month" id="fin" name="fin" required>
     </div>
     <button class="btn" type="submit">Filtrer</button>
   </form>
 
-  <table>
+  <table id="table-interets">
     <thead>
       <tr>
         <th>Mois</th>
@@ -47,57 +26,82 @@ ob_start();
       </tr>
     </thead>
     <tbody>
-      <?php if (!empty($interetsParMois)): ?>
-        <?php foreach ($interetsParMois as $row): ?>
-          <tr>
-            <td><?= htmlspecialchars($row['mois']) ?></td>
-            <td><?= number_format($row['total'], 2, ',', ' ') ?></td>
-          </tr>
-        <?php endforeach; ?>
-      <?php else: ?>
-        <tr><td colspan="2" style="text-align:center;">Aucun intérêt trouvé pour cette période.</td></tr>
-      <?php endif; ?>
+      <tr><td colspan="2" style="text-align:center;">Aucun filtre appliqué</td></tr>
     </tbody>
   </table>
 
   <div style="margin-top:2rem;">
     <canvas id="chartInterets" height="100"></canvas>
   </div>
+</section>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    const mois = <?= json_encode(array_column($interetsParMois, 'mois')) ?>;
-    const valeurs = <?= json_encode(array_map('floatval', array_column($interetsParMois, 'total'))) ?>;
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const form = document.getElementById('filtre-form');
+  const tbody = document.querySelector('#table-interets tbody');
+  const ctx = document.getElementById('chartInterets').getContext('2d');
+  let chart;
 
-    const ctx = document.getElementById('chartInterets').getContext('2d');
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const debut = document.getElementById('debut').value;
+    const fin = document.getElementById('fin').value;
 
-    if (mois.length > 0) {
-      new Chart(ctx, {
-        type: 'bar', // ou 'line'
+    try {
+      const res = await fetch(`/interets/filtre?debut=${debut}&fin=${fin}`);
+      if (!res.ok) throw new Error("Erreur API");
+      const data = await res.json();
+
+      // ➤ Met à jour le tableau
+      tbody.innerHTML = '';
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;">Aucune donnée</td></tr>';
+      } else {
+        data.forEach(row => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${row.mois}</td><td>${parseFloat(row.total).toLocaleString()} Ar</td>`;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // ➤ Met à jour le graphique
+      const mois = data.map(item => item.mois);
+      const valeurs = data.map(item => parseFloat(item.total));
+
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'bar',
         data: {
           labels: mois,
           datasets: [{
             label: 'Intérêts gagnés (Ar)',
             data: valeurs,
-            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+            borderColor: 'rgba(75, 192, 192, 1)',
             borderWidth: 1
           }]
         },
         options: {
           scales: {
-            y: { beginAtZero: true }
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return value.toLocaleString() + ' Ar';
+                }
+              }
+            }
           }
         }
       });
-    } else {
-      ctx.font = "16px Arial";
-      ctx.fillText("Pas de données à afficher", 10, 50);
+
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors du chargement des données.");
     }
-  </script>
-</section>
+  });
+</script>
 
 <?php
 $content = ob_get_clean();
-include __DIR__.'/../templates/layout.php';
-?>
+include __DIR__ . '/../templates/layout.php';
